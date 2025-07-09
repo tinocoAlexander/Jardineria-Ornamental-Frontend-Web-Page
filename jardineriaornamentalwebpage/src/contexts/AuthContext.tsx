@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 interface User {
   id: string;
@@ -11,52 +11,87 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('jardineria_token');
-    const userData = localStorage.getItem('jardineria_user');
-    
-    if (token && userData) {
-      setUser(JSON.parse(userData));
-    }
+    const verifyUser = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch("http://localhost:4000/api/auth/verify", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!response.ok) throw new Error("Token inválido");
+
+        const data = await response.json();
+        setUser(data.user);
+      } catch (error) {
+        console.error("Error verificando token:", error);
+        localStorage.removeItem("token");
+        localStorage.removeItem("jardineria_user");
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    verifyUser();
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Simulate API call
-    if (email === 'admin@jardineria-ornamental.es' && password === 'ornamental2025') {
-      const userData = {
-        id: '1',
-        email: 'admin@jardineria-ornamental.es',
-        role: 'admin'
-      };
-      
-      setUser(userData);
-      localStorage.setItem('jardineria_token', 'mock_jwt_token');
-      localStorage.setItem('jardineria_user', JSON.stringify(userData));
+    try {
+      const response = await fetch("http://localhost:4000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) return false;
+
+      const data = await response.json();
+      const { token, user } = data;
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("jardineria_user", JSON.stringify(user));
+      setUser(user);
+
       return true;
+    } catch (error) {
+      console.error("Login error:", error);
+      return false;
     }
-    return false;
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('jardineria_token');
-    localStorage.removeItem('jardineria_user');
+    localStorage.removeItem("token");
+    localStorage.removeItem("jardineria_user");
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      login,
-      logout,
-      isAuthenticated: !!user
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        login,
+        logout,
+        isLoading,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -65,7 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

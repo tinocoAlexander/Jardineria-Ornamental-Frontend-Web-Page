@@ -1,13 +1,13 @@
 // Importaciones
-import Header from '../components/Header';
-import HeroSection from '../components/HeroSection';
-import FunFactsSection from '../components/FunFactsSection';
-import AboutSection from '../components/AboutSection';
-import AIEstimatorSection from '../components/AIEstimatorSection';
-import TestimonialsSection from '../components/TestimonialsSection';
-import GallerySection from '../components/GallerySection';
-import BookingSection from '../components/BookingSection';
-import Footer from '../components/Footer';
+import Header from "../components/home/Header";
+import HeroSection from "../components/home/HeroSection";
+import FunFactsSection from "../components/home/FunFactsSection";
+import AboutSection from "../components/home/AboutSection";
+import TestimonialsSection from "../components/home/TestimonialsSection";
+import GallerySection from "../components/home/GallerySection";
+import Footer from "../components/home/Footer";
+import AIEstimatorSection from "../components/home/AIEstimatorSection";
+import BookingSection from "../components/home/BookingSection";
 
 const HomePage: React.FC = () => {
   return (

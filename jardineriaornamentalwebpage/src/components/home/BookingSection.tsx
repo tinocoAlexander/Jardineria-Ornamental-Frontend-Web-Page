@@ -1,53 +1,69 @@
-import React, { useState } from 'react';
-import { Calendar, Clock, User, Send, CheckCircle, Leaf } from 'lucide-react';
-import { useAppState } from '../contexts/AppStateContext';
+import React, { useState } from "react";
+import { Calendar, Clock, User, Send, CheckCircle, Leaf } from "lucide-react";
+import { useAppState } from "../../contexts/AppStateContext";
 
 const BookingSection: React.FC = () => {
   const { addAppointment } = useAppState();
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    service: '',
-    date: '',
-    message: ''
+    name: "",
+    email: "",
+    phone: "",
+    service: "",
+    date: "",
+    message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   const services = [
-    'Evaluación y Consulta de Jardín',
-    'Instalación de Cortacésped Automatizado',
-    'Sistema de Riego Inteligente',
-    'Paquete Completo de Automatización',
-    'Mantenimiento y Soporte Técnico',
-    'Diseño Paisajístico Profesional'
+    "Evaluación y Consulta de Jardín",
+    "Instalación de Cortacésped Automatizado",
+    "Sistema de Riego Inteligente",
+    "Paquete Completo de Automatización",
+    "Mantenimiento y Soporte Técnico",
+    "Diseño Paisajístico Profesional",
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    addAppointment(formData);
-    setSubmitted(true);
-    setFormData({ name: '', email: '', phone: '', service: '', date: '', message: '' });
-    setIsSubmitting(false);
-
-    setTimeout(() => setSubmitted(false), 3000);
+    try {
+      await addAppointment(formData);
+      setSubmitted(true);
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        service: "",
+        date: "",
+        message: "",
+      });
+      setTimeout(() => setSubmitted(false), 3000);
+    } catch (error) {
+      alert("Hubo un problema al agendar la cita. Intenta de nuevo.");
+      console.error("Error al agendar cita:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
   return (
-    <section id="booking" className="py-20 bg-gradient-to-br from-ornamental-50 to-nature-50">
+    <section
+      id="booking"
+      className="py-20 bg-gradient-to-br from-ornamental-50 to-nature-50"
+    >
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
@@ -55,7 +71,8 @@ const BookingSection: React.FC = () => {
               Solicite Su Consulta
             </h2>
             <p className="text-xl text-gray-600">
-              Programe una evaluación gratuita y obtenga su plan personalizado de automatización
+              Programe una evaluación gratuita y obtenga su plan personalizado
+              de automatización
             </p>
           </div>
 
@@ -65,17 +82,24 @@ const BookingSection: React.FC = () => {
               <div className="bg-gradient-to-br from-ornamental-600 to-nature-500 p-12 text-white">
                 <div className="flex items-center space-x-3 mb-8">
                   <Leaf className="h-8 w-8" />
-                  <h3 className="text-3xl font-script font-bold">¿Por Qué Elegirnos?</h3>
+                  <h3 className="text-3xl font-script font-bold">
+                    ¿Por Qué Elegirnos?
+                  </h3>
                 </div>
-                
+
                 <div className="space-y-6">
                   <div className="flex items-start space-x-4">
                     <div className="p-2 bg-white/20 rounded-lg flex-shrink-0">
                       <User className="h-6 w-6" />
                     </div>
                     <div>
-                      <h4 className="font-semibold mb-2">Consulta Especializada</h4>
-                      <p className="text-white/80">Asesoramiento personalizado de nuestros especialistas en automatización</p>
+                      <h4 className="font-semibold mb-2">
+                        Consulta Especializada
+                      </h4>
+                      <p className="text-white/80">
+                        Asesoramiento personalizado de nuestros especialistas en
+                        automatización
+                      </p>
                     </div>
                   </div>
 
@@ -85,7 +109,9 @@ const BookingSection: React.FC = () => {
                     </div>
                     <div>
                       <h4 className="font-semibold mb-2">Horarios Flexibles</h4>
-                      <p className="text-white/80">Elija el horario que mejor se adapte a su agenda</p>
+                      <p className="text-white/80">
+                        Elija el horario que mejor se adapte a su agenda
+                      </p>
                     </div>
                   </div>
 
@@ -95,7 +121,9 @@ const BookingSection: React.FC = () => {
                     </div>
                     <div>
                       <h4 className="font-semibold mb-2">Respuesta Rápida</h4>
-                      <p className="text-white/80">Confirmamos su cita dentro de 2 horas</p>
+                      <p className="text-white/80">
+                        Confirmamos su cita dentro de 2 horas
+                      </p>
                     </div>
                   </div>
 
@@ -105,13 +133,17 @@ const BookingSection: React.FC = () => {
                     </div>
                     <div>
                       <h4 className="font-semibold mb-2">Sin Compromiso</h4>
-                      <p className="text-white/80">Evaluación y presupuesto completamente gratuitos</p>
+                      <p className="text-white/80">
+                        Evaluación y presupuesto completamente gratuitos
+                      </p>
                     </div>
                   </div>
                 </div>
 
                 <div className="mt-12 p-6 bg-white/10 rounded-2xl backdrop-blur-sm">
-                  <h4 className="font-semibold mb-3">Qué Incluye la Consulta:</h4>
+                  <h4 className="font-semibold mb-3">
+                    Qué Incluye la Consulta:
+                  </h4>
                   <ul className="text-white/80 space-y-2 text-sm">
                     <li>• Evaluación completa del sitio y mediciones</li>
                     <li>• Demostración de tecnología en vivo</li>
@@ -130,16 +162,21 @@ const BookingSection: React.FC = () => {
                     <div className="inline-flex p-4 bg-nature-100 rounded-full mb-6">
                       <Calendar className="h-8 w-8 text-nature-600" />
                     </div>
-                    <h3 className="text-2xl font-script font-bold text-ornamental-700 mb-4">¡Cita Agendada!</h3>
+                    <h3 className="text-2xl font-script font-bold text-ornamental-700 mb-4">
+                      ¡Cita Agendada!
+                    </h3>
                     <p className="text-gray-600 leading-relaxed">
-                      Nos pondremos en contacto con usted dentro de 2 horas para confirmar 
-                      los detalles de su cita y coordinar la visita.
+                      Nos pondremos en contacto con usted dentro de 2 horas para
+                      confirmar los detalles de su cita y coordinar la visita.
                     </p>
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label
+                        htmlFor="name"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
                         Nombre Completo
                       </label>
                       <input
@@ -155,7 +192,10 @@ const BookingSection: React.FC = () => {
 
                     <div className="grid sm:grid-cols-2 gap-6">
                       <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label
+                          htmlFor="email"
+                          className="block text-sm font-medium text-gray-700 mb-2"
+                        >
                           Email
                         </label>
                         <input
@@ -169,7 +209,10 @@ const BookingSection: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label
+                          htmlFor="phone"
+                          className="block text-sm font-medium text-gray-700 mb-2"
+                        >
                           Teléfono
                         </label>
                         <input
@@ -185,7 +228,10 @@ const BookingSection: React.FC = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="service" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label
+                        htmlFor="service"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
                         Servicio de Interés
                       </label>
                       <select
@@ -198,13 +244,18 @@ const BookingSection: React.FC = () => {
                       >
                         <option value="">Seleccione un servicio</option>
                         {services.map((service, index) => (
-                          <option key={index} value={service}>{service}</option>
+                          <option key={index} value={service}>
+                            {service}
+                          </option>
                         ))}
                       </select>
                     </div>
 
                     <div>
-                      <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label
+                        htmlFor="date"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
                         Fecha Preferida
                       </label>
                       <input
@@ -214,13 +265,16 @@ const BookingSection: React.FC = () => {
                         value={formData.date}
                         onChange={handleChange}
                         required
-                        min={new Date().toISOString().split('T')[0]}
+                        min={new Date().toISOString().split("T")[0]}
                         className="w-full p-4 border border-ornamental-300 rounded-2xl focus:ring-2 focus:ring-ornamental-500 focus:border-transparent outline-none transition-all"
                       />
                     </div>
 
                     <div>
-                      <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label
+                        htmlFor="message"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
                         Información Adicional
                       </label>
                       <textarea

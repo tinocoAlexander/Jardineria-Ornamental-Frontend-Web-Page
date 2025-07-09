@@ -1,5 +1,5 @@
 import { ArrowRight, Leaf, Scissors, Droplets } from 'lucide-react';
-import heroImage from '../assets/hero-image.jpeg'
+import heroImage from '../../assets/hero-image.jpeg'
 
 const HeroSection: React.FC = () => {
   const scrollToSection = (sectionId: string) => {

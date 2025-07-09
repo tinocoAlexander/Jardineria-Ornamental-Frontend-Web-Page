@@ -1,58 +1,111 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useNavigate } from "react-router-dom";
 
-const AdminPanel: React.FC = () => {
+export function LoginForm({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { login } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setIsLoading(true);
 
-    if (email === 'admin@admin.com' && password === 'admin123') {
-      navigate('/admin/config');
-    } else {
-      alert('Credenciales inválidas');
+    try {
+      const success = await login(email, password);
+
+      if (success) {
+        navigate("/admin/dashboard");
+      } else {
+        setError("Credenciales inválidas. Por favor, inténtalo de nuevo.");
+      }
+    } catch (err) {
+      setError(
+        "Ocurrió un error al intentar iniciar sesión. Inténtalo más tarde."
+      );
+      console.error("Login error:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Admin Login</h2>
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-4 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-              placeholder="admin@admin.com"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-4 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-              placeholder="admin123"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-gradient-to-r from-blue-600 to-green-500 text-white p-4 rounded-2xl hover:shadow-lg transition-all duration-300 font-semibold"
-          >
-            Iniciar Sesión
-          </button>
-        </form>
+    <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-sm md:max-w-3xl">
+        <div className={cn("flex flex-col gap-6", className)} {...props}>
+          <Card className="overflow-hidden p-0">
+            <CardContent className="grid p-0 md:grid-cols-2">
+              <form onSubmit={handleLogin} className="p-6 md:p-8">
+                <div className="flex flex-col gap-6">
+                  <div className="flex flex-col items-center text-center">
+                    <h1 className="text-2xl font-bold">Bienvenido</h1>
+                    <p className="text-muted-foreground text-balance">
+                      Inicia sesión para acceder al panel de administración
+                    </p>
+                  </div>
+                  <div className="grid gap-3">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="m@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-3">
+                    <div className="flex items-center">
+                      <Label htmlFor="password">Contraseña</Label>
+                      <a
+                        href="#"
+                        className="ml-auto text-sm underline-offset-2 hover:underline"
+                      >
+                        Olvidé mi contraseña
+                      </a>
+                    </div>
+                    <Input
+                      id="password"
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                  </div>
+                  {/* Muestra el error si existe */}
+                  {error && (
+                    <div className="text-destructive text-sm text-center">
+                      {error}
+                    </div>
+                  )}
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
+                  </Button>
+                </div>
+              </form>
+              <div className="bg-muted relative hidden md:block">
+                <img
+                  src="https://images.pexels.com/photos/1108572/pexels-photo-1108572.jpeg"
+                  alt="Image"
+                  className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
-};
-
-export default AdminPanel;
+}
