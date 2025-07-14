@@ -50,7 +50,7 @@ const data = {
     },
     {
       title: "Servicios",
-      url: "/admin/dashboard/contacts",
+      url: "/admin/dashboard/service",
       icon: Bot,
     },
     {

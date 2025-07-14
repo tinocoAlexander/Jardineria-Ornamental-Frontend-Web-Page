@@ -7,11 +7,11 @@ import Error404 from "./pages/Error404";
 import Error500 from "./pages/Error500";
 import { LoginForm } from "./pages/AdminPanel";
 import Appointments from "./components/admin/Appointments";
-import Contacts from "./components/admin/Contacts";
 import ContentManager from "./components/admin/ContentManager";
 import CartStatus from "./components/admin/CarStatus";
 import Page from "./components/admin/Layout";
 import Dashboard from "./components/admin/dashboard";
+import Servicios from "./components/admin/Service";
 
 function App() {
   return (
@@ -35,7 +35,7 @@ function App() {
               >
                 <Route index element={<Dashboard/>} />
                 <Route path="appointments" element={<Appointments />} />
-                <Route path="contacts" element={<Contacts />} />
+                <Route path="service" element={<Servicios />} />
                 <Route path="content" element={<ContentManager />} />
                 <Route path="cart" element={<CartStatus />} />
               </Route>
