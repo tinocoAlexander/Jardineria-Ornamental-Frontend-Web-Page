@@ -1,9 +1,10 @@
-import React from "react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+type StatusFilter = "activos" | "inactivos" | "todos";
+
 type Props = {
-  filterStatus: "activos" | "inactivos" | "todos";
+  filterStatus: StatusFilter;
   setFilterStatus: (val: "activos" | "inactivos" | "todos") => void;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
@@ -23,7 +24,7 @@ const ServiciosToolbar = ({
       <div className="flex flex-col md:flex-row items-center gap-4">
         <Tabs
           value={filterStatus}
-          onValueChange={(val) => setFilterStatus(val as any)}
+          onValueChange={(val) => setFilterStatus(val as StatusFilter)}
         >
           <TabsList>
             <TabsTrigger value="activos">Activos</TabsTrigger>

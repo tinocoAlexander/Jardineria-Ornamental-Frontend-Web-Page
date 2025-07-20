@@ -3,6 +3,7 @@ import { useAppState } from "@/contexts/AppStateContext";
 import { Loader2 } from "lucide-react";
 import ServiciosToolbar from "./components/ServiciosToolbar";
 import ServicioCard from "./components/ServicioCard";
+import AgregarServicioModal from "./components/ServicioAgregar";
 
 const Servicios: React.FC = () => {
   const {
@@ -14,7 +15,6 @@ const Servicios: React.FC = () => {
   } = useAppState();
 
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<
     "todos" | "activos" | "inactivos"
@@ -25,8 +25,8 @@ const Servicios: React.FC = () => {
       setLoading(true);
       try {
         await loadServices();
-      } catch (err) {
-        setError("Error al cargar servicios.");
+      } catch (error) {
+        console.error("Error al cargar servicios:", error);
       } finally {
         setLoading(false);
       }
@@ -37,14 +37,18 @@ const Servicios: React.FC = () => {
 
   const filteredServices = services.filter((servicio) => {
     const matchesSearch =
-      servicio.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      servicio.descripcion.toLowerCase().includes(searchTerm.toLowerCase());
+      (servicio.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ??
+        false) ||
+      (servicio.descripcion?.toLowerCase().includes(searchTerm.toLowerCase()) ??
+        false);
+
     const matchesStatus =
       filterStatus === "todos"
         ? true
         : filterStatus === "activos"
         ? servicio.activo
         : !servicio.activo;
+
     return matchesSearch && matchesStatus;
   });
 
@@ -66,21 +70,27 @@ const Servicios: React.FC = () => {
         setSearchTerm={setSearchTerm}
       />
 
+      <div className="flex justify-start mb-4">
+        <AgregarServicioModal />
+      </div>
+
       {filteredServices.length === 0 ? (
         <p className="text-center text-muted-foreground mt-8">
           No se encontraron servicios.
         </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredServices.map((servicio) => (
-            <ServicioCard
-              key={servicio._id}
-              servicio={servicio}
-              updateService={updateService}
-              deleteService={deleteService}
-              toggleEstadoService={toggleEstadoService}
-            />
-          ))}
+          {filteredServices.map((servicio) =>
+            servicio && servicio._id && servicio.nombre ? (
+              <ServicioCard
+                key={servicio._id}
+                servicio={servicio}
+                updateService={updateService}
+                deleteService={deleteService}
+                toggleEstadoService={toggleEstadoService}
+              />
+            ) : null
+          )}
         </div>
       )}
     </div>

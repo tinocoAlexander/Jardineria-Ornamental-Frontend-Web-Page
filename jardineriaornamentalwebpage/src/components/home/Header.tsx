@@ -59,10 +59,10 @@ const Header: React.FC = () => {
               Nosotros
             </button>
             <button
-              onClick={() => scrollToSection("services")}
+              onClick={() => scrollToSection("ai-estimator")}
               className="text-gray-700 hover:text-ornamental-600 transition-colors font-medium"
             >
-              Servicios
+              Cotizacion
             </button>
             <button
               onClick={() => scrollToSection("gallery")}

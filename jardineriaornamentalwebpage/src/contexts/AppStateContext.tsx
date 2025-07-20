@@ -1,7 +1,7 @@
 import React, { createContext, useContext } from "react";
 import { create } from "zustand";
 
-interface Appointment {
+export interface Appointment {
   _id: string;
   name: string;
   email: string;
@@ -12,7 +12,15 @@ interface Appointment {
   atendido: "pendiente" | "confirmado" | "completado";
 }
 
-interface Service {
+export interface Content {
+  _id: string;
+  seccion: string;
+  descripcion: string;
+  imagenUrl?: string;
+  activo: boolean;
+}
+
+export interface Service {
   _id: string;
   nombre: string;
   descripcion: string;
@@ -20,19 +28,35 @@ interface Service {
   activo: boolean;
 }
 
+export interface User {
+  _id: string;
+  nombre: string;
+  apellido: string;
+  email: string;
+  telefono: string;
+  direccion?: string;
+  rol: "admin" | "empleado";
+  activo: boolean;
+  avatar?: string;
+  createdAt?: string;
+}
+
 interface AppState {
+  //Citas
   appointments: Appointment[];
-  services: Service[];
-  content: {
-    about: string;
-    mission: string;
-    vision: string;
-  };
-  addAppointment: (appointment: Omit<Appointment, "id" | "atendido">) => void;
+  addAppointment: (appointment: {
+    name: string;
+    email: string;
+    phone: string;
+    service: string;
+    date: string;
+    message: string;
+  }) => Promise<void>;
   loadAppointments: () => Promise<void>;
   updateAppointment: (id: string, updates: Partial<Appointment>) => void;
   deleteAppointment: (id: string) => void;
-  updateContent: (field: keyof AppState["content"], value: string) => void;
+  //Servicios
+  services: Service[];
   loadServices: () => Promise<void>;
   deleteService: (id: string) => void;
   createService: (
@@ -40,19 +64,32 @@ interface AppState {
   ) => Promise<void>;
   updateService: (id: string, updates: Partial<Service>) => Promise<void>;
   toggleEstadoService: (id: string) => Promise<void>;
+  //Contenido
+  content: Content[];
+  loadContent: () => Promise<void>;
+  createContent: (contentData: Omit<Content, "_id">) => Promise<void>;
+  updateContent: (id: string, updates: Partial<Content>) => Promise<void>;
+  deleteContent: (id: string) => Promise<void>;
+  toggleActivo: (id: string) => Promise<void>;
+  //Usuarios
+  users: User[];
+  loadUsers: () => Promise<void>;
+  createUser: (userData: {
+    nombre: string;
+    apellido: string;
+    email: string;
+    password: string;
+    telefono: string;
+    direccion?: string;
+    rol: "admin" | "empleado";
+  }) => Promise<void>;
 }
 
 const useAppStore = create<AppState>((set, get) => ({
   appointments: [],
   services: [],
-  content: {
-    about:
-      "Jardinería Ornamental es una empresa líder en servicios profesionales de jardinería con más de 25 años de experiencia. Nos especializamos en soluciones innovadoras de automatización para el cuidado y mantenimiento de espacios verdes, combinando tradición artesanal con tecnología de vanguardia.",
-    mission:
-      "Transformar espacios verdes a través de tecnología inteligente y prácticas sostenibles, ofreciendo soluciones de mantenimiento que respetan el medio ambiente y superan las expectativas de nuestros clientes.",
-    vision:
-      "Ser la empresa de referencia en automatización de jardines en España, creando un mundo donde la tecnología y la naturaleza trabajen en perfecta armonía para espacios verdes más hermosos y sostenibles.",
-  },
+  content: [],
+  users: [],
 
   // Servicios
   loadServices: async () => {
@@ -167,7 +204,14 @@ const useAppStore = create<AppState>((set, get) => ({
   },
 
   //Citas
-  addAppointment: async (appointment) => {
+  addAppointment: async (appointment: {
+    name: string;
+    email: string;
+    phone: string;
+    service: string;
+    date: string;
+    message: string;
+  }) => {
     try {
       const response = await fetch(`http://localhost:4000/api/appointments`, {
         method: "POST",
@@ -258,10 +302,126 @@ const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
-  updateContent: (field, value) => {
-    const content = { ...get().content, [field]: value };
-    set({ content });
-    localStorage.setItem("jardineria_content", JSON.stringify(content));
+  //Contenido
+  loadContent: async () => {
+    try {
+      const res = await fetch("http://localhost:4000/api/content");
+      if (!res.ok) throw new Error("Error al cargar contenido");
+      const data: Content[] = await res.json();
+      set({ content: data });
+    } catch (error) {
+      console.error("❌ Error cargando contenido:", error);
+    }
+  },
+
+  createContent: async (contentData) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Token no encontrado");
+      const res = await fetch(`http://localhost:4000/api/content`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(contentData),
+      });
+      if (!res.ok) throw new Error("Error al crear contenido");
+      const nuevo = await res.json();
+      set({ content: [...get().content, nuevo] });
+    } catch (error) {
+      console.error("❌ Error al crear contenido:", error);
+    }
+  },
+
+  updateContent: async (id, updates) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Token no encontrado");
+      const res = await fetch(`http://localhost:4000/api/content/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updates),
+      });
+      if (!res.ok) throw new Error("Error al actualizar contenido");
+      const updated = await res.json();
+      set({
+        content: get().content.map((c) => (c._id === id ? updated : c)),
+      });
+    } catch (error) {
+      console.error("❌ Error al actualizar contenido:", error);
+    }
+  },
+
+  deleteContent: async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Token no encontrado");
+      const res = await fetch(`http://localhost:4000/api/content/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Error al eliminar contenido");
+      set({ content: get().content.filter((c) => c._id !== id) });
+    } catch (error) {
+      console.error("❌ Error al eliminar contenido:", error);
+    }
+  },
+
+  toggleActivo: async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Token no encontrado");
+      const res = await fetch(
+        `http://localhost:4000/api/content/${id}/activo`,
+        {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (!res.ok) throw new Error("Error al cambiar estado");
+      const updated = await res.json();
+      set({
+        content: get().content.map((c) => (c._id === id ? updated.content : c)),
+      });
+    } catch (error) {
+      console.error("❌ Error al cambiar estado:", error);
+    }
+  },
+
+  //Usuarios
+  loadUsers: async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:4000/api/auth/users", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Error al cargar usuarios");
+      const data = await res.json();
+      set({ users: data });
+    } catch (error) {
+      console.error("❌ Error al cargar usuarios:", error);
+    }
+  },
+
+  createUser: async (userData) => {
+    try {
+      const res = await fetch("http://localhost:4000/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData),
+      });
+      if (!res.ok) throw new Error("Error al registrar usuario");
+      const result = await res.json();
+      set({ users: [...get().users, result] });
+      await get().loadUsers(); // Recargar usuarios
+    } catch (error) {
+      console.error("❌ Error al crear usuario:", error);
+      throw error;
+    }
   },
 }));
 

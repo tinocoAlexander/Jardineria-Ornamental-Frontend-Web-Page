@@ -4,14 +4,15 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Trash2, Eye } from "lucide-react";
 import AppointmentModal from "./AppointmentModal";
 import ConfirmDialog from "./ConfirmDialog";
+import { Appointment } from "@/contexts/AppStateContext";
 
 const AppointmentRow = ({
   appointment,
   updateAppointment,
   deleteAppointment,
 }: {
-  appointment: any;
-  updateAppointment: (id: string, data: any) => void;
+  appointment: Appointment;
+  updateAppointment: (id: string, data: Partial<Appointment>) => void;
   deleteAppointment: (id: string) => void;
 }) => {
   const getStatusBadge = (estado: string) => {
@@ -41,26 +42,36 @@ const AppointmentRow = ({
       <TableCell>{getStatusBadge(appointment.atendido)}</TableCell>
       <TableCell className="text-right space-x-2">
         {appointment.atendido === "pendiente" && (
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() =>
+          <ConfirmDialog
+            trigger={
+              <Button variant="outline" size="icon">
+                <Check className="w-4 h-4 text-blue-600" />
+              </Button>
+            }
+            title="Confirmar cita"
+            description="¿Deseas marcar esta cita como confirmada?"
+            confirmText="Confirmar"
+            onConfirm={() =>
               updateAppointment(appointment._id, { atendido: "confirmado" })
             }
-          >
-            <Check className="w-4 h-4 text-blue-600" />
-          </Button>
+            confirmClassName="bg-blue-600 hover:bg-blue-700"
+          />
         )}
         {appointment.atendido === "confirmado" && (
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() =>
+          <ConfirmDialog
+            trigger={
+              <Button variant="outline" size="icon">
+                <Check className="w-4 h-4 text-green-600" />
+              </Button>
+            }
+            title="Completar cita"
+            description="¿Deseas marcar esta cita como completada?"
+            confirmText="Completar"
+            onConfirm={() =>
               updateAppointment(appointment._id, { atendido: "completado" })
             }
-          >
-            <Check className="w-4 h-4 text-green-600" />
-          </Button>
+            confirmClassName="bg-green-600 hover:bg-green-700"
+          />
         )}
         <AppointmentModal
           trigger={

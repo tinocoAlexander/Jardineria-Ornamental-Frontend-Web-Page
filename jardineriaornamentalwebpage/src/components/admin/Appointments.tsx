@@ -32,7 +32,6 @@ const Appointments = () => {
   } = useAppState();
 
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [filterStatus, setFilterStatus] = useState("todos");
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,11 +40,10 @@ const Appointments = () => {
 
   const fetchAppointments = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
       await loadAppointments();
     } catch (err) {
-      setError("No se pudieron cargar las citas.");
+      console.error("Error al cargar citas:", err);
     } finally {
       setLoading(false);
     }

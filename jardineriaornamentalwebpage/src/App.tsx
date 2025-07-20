@@ -12,6 +12,8 @@ import CartStatus from "./components/admin/CarStatus";
 import Page from "./components/admin/Layout";
 import Dashboard from "./components/admin/dashboard";
 import Servicios from "./components/admin/Service";
+import Usuarios from "./components/admin/Users";
+import Perfil from "./components/admin/Profile";
 
 function App() {
   return (
@@ -38,6 +40,8 @@ function App() {
                 <Route path="service" element={<Servicios />} />
                 <Route path="content" element={<ContentManager />} />
                 <Route path="cart" element={<CartStatus />} />
+                <Route path="usuarios" element={<Usuarios />} />
+                <Route path="perfil" element={<Perfil />} />
               </Route>
             </Routes>
           </div>

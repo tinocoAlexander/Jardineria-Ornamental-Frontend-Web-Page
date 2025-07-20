@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useAppState } from "@/contexts/AppStateContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -35,9 +35,6 @@ const Dashboard = () => {
   ).length;
   const citasConfirmadas = appointments.filter(
     (a) => a.atendido === "confirmado"
-  ).length;
-  const citasCompletadas = appointments.filter(
-    (a) => a.atendido === "completado"
   ).length;
 
   const citasHoy = useMemo(() => {

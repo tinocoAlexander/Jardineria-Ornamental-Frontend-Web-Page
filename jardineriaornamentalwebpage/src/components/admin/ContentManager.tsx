@@ -1,70 +1,61 @@
-import { useState } from "react";
-import { useAppState } from "../../contexts/AppStateContext";
+import { useEffect, useState } from "react";
+import { useAppState, Content } from "../../contexts/AppStateContext";
+import ContentCard from "./components/ContentCard";
 
 const ContentManager = () => {
-  const { content, updateContent } = useAppState();
-  const [editingContent, setEditingContent] = useState<string | null>(null);
-  const [contentForm, setContentForm] = useState({ ...content });
+  const { content, loadContent, updateContent, toggleActivo, deleteContent } =
+    useAppState();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [formState, setFormState] = useState<Partial<Content>>({});
 
-  const handleEditContent = (field: keyof typeof content) => {
-    setEditingContent(field);
-    setContentForm({ ...content });
+  useEffect(() => {
+    loadContent();
+  }, [loadContent]);
+
+  const handleEdit = (item: Content) => {
+    setEditingId(item._id);
+    setFormState({ ...item });
   };
 
-  const handleSaveContent = () => {
-    if (editingContent) {
-      updateContent(
-        editingContent as keyof typeof content,
-        contentForm[editingContent as keyof typeof content]
-      );
-      setEditingContent(null);
-    }
+  const handleCancel = () => {
+    setEditingId(null);
+    setFormState({});
   };
+
+  const handleChange = (field: keyof Content, value: string | boolean) => {
+    setFormState({ ...formState, [field]: value });
+  };
+
+  const handleSave = async () => {
+    if (!editingId) return;
+    await updateContent(editingId, formState);
+    setEditingId(null);
+  };
+
+  if (!content) return <div className="p-6">Cargando contenido...</div>;
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800">Contenido del Sitio</h2>
-      {Object.entries(content).map(([key, value]) => (
-        <div key={key} className="bg-white p-6 rounded-xl shadow">
-          <h4 className="text-lg font-semibold capitalize">{key}</h4>
-          {editingContent === key ? (
-            <>
-              <textarea
-                className="w-full p-3 border rounded-lg mt-2"
-                rows={4}
-                value={contentForm[key as keyof typeof content]}
-                onChange={(e) =>
-                  setContentForm((prev) => ({ ...prev, [key]: e.target.value }))
-                }
-              />
-              <div className="space-x-2 mt-2">
-                <button
-                  onClick={handleSaveContent}
-                  className="bg-green-600 text-white px-4 py-2 rounded-lg"
-                >
-                  Guardar
-                </button>
-                <button
-                  onClick={() => setEditingContent(null)}
-                  className="bg-gray-400 text-white px-4 py-2 rounded-lg"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className="flex justify-between items-center mt-2">
-              <p>{value}</p>
-              <button
-                onClick={() => handleEditContent(key as keyof typeof content)}
-                className="text-blue-600 hover:underline"
-              >
-                Editar
-              </button>
-            </div>
-          )}
-        </div>
-      ))}
+    <div className="space-y-4 p-4 md:p-6">
+      <h2 className="text-2xl font-bold text-gray-800 mb-4">
+        Gestión de Contenido
+      </h2>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {content.map((item) => (
+          <ContentCard
+            key={item._id}
+            item={item}
+            isEditing={editingId === item._id}
+            formState={formState}
+            onEdit={() => handleEdit(item)}
+            onCancel={handleCancel}
+            onChange={handleChange}
+            onSave={handleSave}
+            onToggle={() => toggleActivo(item._id)}
+            onDelete={() => deleteContent(item._id)}
+          />
+        ))}
+      </div>
     </div>
   );
 };

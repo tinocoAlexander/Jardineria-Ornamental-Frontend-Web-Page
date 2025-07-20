@@ -6,8 +6,8 @@ import AboutSection from "../components/home/AboutSection";
 import TestimonialsSection from "../components/home/TestimonialsSection";
 import GallerySection from "../components/home/GallerySection";
 import Footer from "../components/home/Footer";
-import AIEstimatorSection from "../components/home/AIEstimatorSection";
 import BookingSection from "../components/home/BookingSection";
+import AIEstimatorSection from "@/components/home/AIEstimatorSection";
 
 const HomePage: React.FC = () => {
   return (

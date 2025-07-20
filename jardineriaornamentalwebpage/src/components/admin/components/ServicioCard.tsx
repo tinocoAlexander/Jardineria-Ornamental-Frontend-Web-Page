@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { CheckCircle, XCircle, Trash2, Pencil } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,17 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import ConfirmDialog from "./ConfirmDialog";
 import ServicioDetalleModal from "./ServicioDetalleModal";
+import type { Service } from "../../../contexts/AppStateContext";
 
-const ServicioCard = ({
+interface ServicioCardProps {
+  servicio: Service;
+  updateService: (id: string, updates: Partial<Service>) => Promise<void>;
+  deleteService: (id: string) => void;
+  toggleEstadoService: (id: string) => Promise<void>;
+}
+
+const ServicioCard: React.FC<ServicioCardProps> = ({
   servicio,
   updateService,
   deleteService,
   toggleEstadoService,
-}: {
-  servicio: any;
-  updateService: any;
-  deleteService: any;
-  toggleEstadoService: any;
 }) => {
   const [editMode, setEditMode] = useState(false);
   const [formState, setFormState] = useState({
@@ -115,7 +118,16 @@ const ServicioCard = ({
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => toggleEstadoService(servicio._id)}
+                  onClick={async () => {
+                    try {
+                      await toggleEstadoService(servicio._id);
+                    } catch (error) {
+                      console.error("❌ Error al cambiar el estado:", error);
+                      alert(
+                        "Hubo un problema al cambiar el estado del servicio."
+                      );
+                    }
+                  }}
                 >
                   {servicio.activo ? (
                     <XCircle className="w-4 h-4 text-red-600" />

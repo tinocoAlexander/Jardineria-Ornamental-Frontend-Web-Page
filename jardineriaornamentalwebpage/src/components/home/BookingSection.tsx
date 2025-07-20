@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Calendar, Clock, User, Send, CheckCircle, Leaf } from "lucide-react";
 import { useAppState } from "../../contexts/AppStateContext";
 
 const BookingSection: React.FC = () => {
-  const { addAppointment } = useAppState();
+  const { addAppointment, services, loadServices } = useAppState();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -15,14 +16,9 @@ const BookingSection: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const services = [
-    "Evaluación y Consulta de Jardín",
-    "Instalación de Cortacésped Automatizado",
-    "Sistema de Riego Inteligente",
-    "Paquete Completo de Automatización",
-    "Mantenimiento y Soporte Técnico",
-    "Diseño Paisajístico Profesional",
-  ];
+  useEffect(() => {
+    loadServices();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,7 +74,7 @@ const BookingSection: React.FC = () => {
 
           <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-ornamental-200">
             <div className="grid lg:grid-cols-2">
-              {/* Left side - Info */}
+              {/* Lado izquierdo - información */}
               <div className="bg-gradient-to-br from-ornamental-600 to-nature-500 p-12 text-white">
                 <div className="flex items-center space-x-3 mb-8">
                   <Leaf className="h-8 w-8" />
@@ -155,7 +151,7 @@ const BookingSection: React.FC = () => {
                 </div>
               </div>
 
-              {/* Right side - Form */}
+              {/* Lado derecho - formulario */}
               <div className="p-12">
                 {submitted ? (
                   <div className="text-center py-12">
@@ -243,11 +239,13 @@ const BookingSection: React.FC = () => {
                         className="w-full p-4 border border-ornamental-300 rounded-2xl focus:ring-2 focus:ring-ornamental-500 focus:border-transparent outline-none transition-all"
                       >
                         <option value="">Seleccione un servicio</option>
-                        {services.map((service, index) => (
-                          <option key={index} value={service}>
-                            {service}
-                          </option>
-                        ))}
+                        {services
+                          .filter((s) => s.activo)
+                          .map((service) => (
+                            <option key={service._id} value={service.nombre}>
+                              {service.nombre}
+                            </option>
+                          ))}
                       </select>
                     </div>
 
