@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Eye, EyeOff, Trash2, CheckCircle, XCircle } from "lucide-react";
 import ConfirmDialog from "./ConfirmDialog";
 import { Content } from "@/contexts/AppStateContext";
+import RoleGuard from "./RoleGuard";
 
 type Props = {
   item: Content;
@@ -37,24 +38,42 @@ const ContentCard = ({
           {item.seccion}
         </Label>
         <div className="flex gap-2">
-          <Button size="icon" variant="ghost" onClick={onToggle}>
-            {item.activo ? (
-              <Eye className="w-5 h-5" />
-            ) : (
-              <EyeOff className="w-5 h-5" />
-            )}
-          </Button>
           <ConfirmDialog
             trigger={
-              <Button variant="outline" size="icon">
-                <Trash2 className="w-4 h-4 text-red-600" />
+              <Button size="icon" variant="ghost">
+                {item.activo ? (
+                  <Eye className="w-5 h-5 text-gray-600" />
+                ) : (
+                  <EyeOff className="w-5 h-5 text-gray-400" />
+                )}
               </Button>
             }
-            title="Eliminar contenido"
-            description="¿Estás seguro de eliminar este contenido?"
-            confirmText="Eliminar"
-            onConfirm={onDelete}
+            title={item.activo ? "Ocultar contenido" : "Mostrar contenido"}
+            description={`¿Estás seguro de que deseas ${
+              item.activo ? "ocultar" : "mostrar"
+            } el contenido de la sección "${item.seccion}"?`}
+            confirmText={item.activo ? "Ocultar" : "Mostrar"}
+            confirmClassName={
+              item.activo
+                ? "bg-gray-500 hover:bg-gray-600"
+                : "bg-green-600 hover:bg-green-700"
+            }
+            onConfirm={onToggle}
           />
+
+          <RoleGuard allow={["admin"]}>
+            <ConfirmDialog
+              trigger={
+                <Button variant="outline" size="icon">
+                  <Trash2 className="w-4 h-4 text-red-600" />
+                </Button>
+              }
+              title="Eliminar contenido"
+              description="¿Estás seguro de eliminar este contenido?"
+              confirmText="Eliminar"
+              onConfirm={onDelete}
+            />
+          </RoleGuard>
         </div>
       </CardHeader>
 

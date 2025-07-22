@@ -6,11 +6,11 @@ import {
   Bot,
   Calendar,
   Frame,
-  GalleryVerticalEnd,
   // Map,
   // PieChart,
   Car,
   BookUser,
+  Sprout,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -30,8 +30,8 @@ const data = {
   teams: [
     {
       name: "Jardineria Ornamental",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
+      logo: Sprout,
+      plan: "Empresa",
     },
   ],
   navMain: [

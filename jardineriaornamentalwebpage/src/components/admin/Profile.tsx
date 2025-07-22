@@ -5,16 +5,19 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import ConfirmDialog from "./components/ConfirmDialog";
+import AvatarPreview from "./components/ProfileAvatarPreview";
 
 const Profile = () => {
   const { user, updateProfile } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [form, setForm] = useState({
     nombre: user?.nombre || "",
     apellido: user?.apellido || "",
@@ -23,33 +26,33 @@ const Profile = () => {
     avatarUrl: user?.avatar || "",
     fileBase64: "",
   });
-  const [loading, setLoading] = useState(false);
+
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isValid, setIsValid] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!form.nombre.trim()) newErrors.nombre = "El nombre es obligatorio.";
-    if (!form.apellido.trim())
-      newErrors.apellido = "El apellido es obligatorio.";
-
-    if (!form.telefono.trim()) {
-      newErrors.telefono = "El teléfono es obligatorio.";
-    } else if (!/^\d{10}$/.test(form.telefono)) {
-      newErrors.telefono = "El teléfono debe tener exactamente 10 dígitos.";
+  const validateField = (field: string, value: string): string | undefined => {
+    switch (field) {
+      case "nombre":
+        return !value.trim() ? "El nombre es obligatorio." : undefined;
+      case "apellido":
+        return !value.trim() ? "El apellido es obligatorio." : undefined;
+      case "telefono":
+        if (!value.trim()) return "El teléfono es obligatorio.";
+        if (!/^\d{10}$/.test(value)) return "Debe tener 10 dígitos.";
+        return undefined;
+      case "avatarUrl":
+        return value.trim() && !/^https?:\/\/.+\..+/.test(value)
+          ? "URL inválida."
+          : undefined;
+      default:
+        return undefined;
     }
-
-    setErrors(newErrors);
-    setIsValid(Object.keys(newErrors).length === 0);
   };
-
-  useEffect(() => {
-    validateForm();
-  }, [form.nombre, form.apellido, form.telefono]);
 
   const handleChange = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+    const error = validateField(field, value);
+    setErrors((prev) => ({ ...prev, [field]: error || "" }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,13 +66,20 @@ const Profile = () => {
         fileBase64: reader.result as string,
         avatarUrl: "",
       }));
+      if (fileInputRef.current) fileInputRef.current.value = "";
     };
     reader.readAsDataURL(file);
   };
 
-  const handleSave = async () => {
-    validateForm();
-    if (!isValid) return;
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    handleChange("avatarUrl", url);
+    setForm((prev) => ({ ...prev, fileBase64: "" }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleConfirmSave = async () => {
+    if (Object.values(errors).some((e) => e)) return;
 
     setLoading(true);
     await updateProfile({
@@ -79,8 +89,11 @@ const Profile = () => {
       direccion: form.direccion,
       avatar: form.fileBase64 || form.avatarUrl,
     });
+    setForm((prev) => ({ ...prev, fileBase64: "" }));
     setLoading(false);
   };
+
+  const isFormValid = Object.values(errors).every((e) => !e);
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -95,27 +108,26 @@ const Profile = () => {
         <CardContent className="space-y-6">
           {/* Avatar */}
           <div className="flex flex-col items-center border rounded-lg p-4 gap-4">
-            <Avatar className="h-28 w-28 shadow border">
-              <AvatarImage
-                src={
-                  form.fileBase64 || form.avatarUrl || "/avatars/default.jpg"
-                }
-                alt="Avatar"
-              />
-              <AvatarFallback>
-                {form.nombre.charAt(0).toUpperCase() || "U"}
-              </AvatarFallback>
-            </Avatar>
+            <AvatarPreview
+              src={form.fileBase64 || form.avatarUrl}
+              fallback={(
+                form.nombre?.charAt(0) ||
+                user?.nombre?.charAt(0) ||
+                "U"
+              ).toUpperCase()}
+            />
 
             <div className="grid w-full md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="file-upload">Subir imagen</Label>
+                <Label htmlFor="file-upload">Subir nueva imagen</Label>
                 <Input
                   id="file-upload"
                   type="file"
                   accept="image/*"
                   onChange={handleFileChange}
+                  ref={fileInputRef}
                   className="cursor-pointer"
+                  disabled={loading}
                 />
               </div>
 
@@ -125,8 +137,15 @@ const Profile = () => {
                   id="avatar-url"
                   placeholder="https://ejemplo.com/avatar.jpg"
                   value={form.avatarUrl}
-                  onChange={(e) => handleChange("avatarUrl", e.target.value)}
+                  onChange={handleUrlChange}
+                  className={errors.avatarUrl ? "border-red-500" : ""}
+                  disabled={loading}
                 />
+                {errors.avatarUrl && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.avatarUrl}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -140,12 +159,12 @@ const Profile = () => {
                 value={form.nombre}
                 onChange={(e) => handleChange("nombre", e.target.value)}
                 className={errors.nombre ? "border-red-500" : ""}
+                disabled={loading}
               />
               {errors.nombre && (
                 <p className="text-sm text-red-500 mt-1">{errors.nombre}</p>
               )}
             </div>
-
             <div>
               <Label htmlFor="apellido">Apellido</Label>
               <Input
@@ -153,12 +172,12 @@ const Profile = () => {
                 value={form.apellido}
                 onChange={(e) => handleChange("apellido", e.target.value)}
                 className={errors.apellido ? "border-red-500" : ""}
+                disabled={loading}
               />
               {errors.apellido && (
                 <p className="text-sm text-red-500 mt-1">{errors.apellido}</p>
               )}
             </div>
-
             <div>
               <Label htmlFor="telefono">Teléfono</Label>
               <Input
@@ -166,50 +185,58 @@ const Profile = () => {
                 value={form.telefono}
                 onChange={(e) => handleChange("telefono", e.target.value)}
                 className={errors.telefono ? "border-red-500" : ""}
+                disabled={loading}
               />
               {errors.telefono && (
                 <p className="text-sm text-red-500 mt-1">{errors.telefono}</p>
               )}
             </div>
-
             <div>
               <Label htmlFor="direccion">Dirección</Label>
               <Input
                 id="direccion"
                 value={form.direccion}
                 onChange={(e) => handleChange("direccion", e.target.value)}
+                disabled={loading}
               />
             </div>
           </div>
 
-          {/* Datos no editables */}
+          {/* Datos fijos */}
           <div className="grid md:grid-cols-2 gap-4 border-t pt-4">
             <div>
               <Label htmlFor="email">Correo electrónico</Label>
-              <Input id="email" value={user?.email} disabled />
+              <Input id="email" value={user?.email || ""} disabled />
             </div>
-
             <div>
               <Label htmlFor="rol">Rol</Label>
-              <Input id="rol" value={user?.role} disabled />
+              <Input id="rol" value={user?.role || "desconocido"} disabled />
             </div>
           </div>
 
-          {/* Botón */}
-          <Button
-            onClick={handleSave}
-            disabled={loading || !isValid}
-            className="w-full mt-2"
-          >
-            {loading ? (
-              <span className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Guardando...
-              </span>
-            ) : (
-              "Guardar cambios"
-            )}
-          </Button>
+          <ConfirmDialog
+            trigger={
+              <Button
+                disabled={loading || !isFormValid}
+                className="w-full mt-2"
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Guardando...
+                  </span>
+                ) : (
+                  "Guardar cambios"
+                )}
+              </Button>
+            }
+            title="¿Confirmar cambios?"
+            description="Estás a punto de actualizar la información de tu perfil. ¿Deseas continuar?"
+            confirmText="Guardar"
+            cancelText="Cancelar"
+            onConfirm={handleConfirmSave}
+            confirmClassName="bg-blue-600 hover:bg-blue-700"
+          />
         </CardContent>
       </Card>
     </div>

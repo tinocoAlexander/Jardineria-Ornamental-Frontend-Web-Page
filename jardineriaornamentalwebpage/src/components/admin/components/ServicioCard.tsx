@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import ConfirmDialog from "./ConfirmDialog";
 import ServicioDetalleModal from "./ServicioDetalleModal";
 import type { Service } from "../../../contexts/AppStateContext";
+import RoleGuard from "./RoleGuard";
 
 interface ServicioCardProps {
   servicio: Service;
@@ -115,10 +116,29 @@ const ServicioCard: React.FC<ServicioCardProps> = ({
                 >
                   <Pencil className="w-4 h-4 text-blue-600" />
                 </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={async () => {
+                <ConfirmDialog
+                  trigger={
+                    <Button variant="outline" size="icon">
+                      {servicio.activo ? (
+                        <XCircle className="w-4 h-4 text-red-600" />
+                      ) : (
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      )}
+                    </Button>
+                  }
+                  title={
+                    servicio.activo ? "Desactivar servicio" : "Activar servicio"
+                  }
+                  description={`¿Estás seguro de que deseas ${
+                    servicio.activo ? "desactivar" : "activar"
+                  } el servicio "${servicio.nombre}"?`}
+                  confirmText={servicio.activo ? "Desactivar" : "Activar"}
+                  confirmClassName={
+                    servicio.activo
+                      ? "bg-gray-500 hover:bg-gray-600"
+                      : "bg-green-600 hover:bg-green-700"
+                  }
+                  onConfirm={async () => {
                     try {
                       await toggleEstadoService(servicio._id);
                     } catch (error) {
@@ -128,24 +148,20 @@ const ServicioCard: React.FC<ServicioCardProps> = ({
                       );
                     }
                   }}
-                >
-                  {servicio.activo ? (
-                    <XCircle className="w-4 h-4 text-red-600" />
-                  ) : (
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                  )}
-                </Button>
-                <ConfirmDialog
-                  trigger={
-                    <Button variant="outline" size="icon">
-                      <Trash2 className="w-4 h-4 text-red-600" />
-                    </Button>
-                  }
-                  title="Eliminar servicio"
-                  description={`¿Eliminar "${servicio.nombre}"?`}
-                  confirmText="Eliminar"
-                  onConfirm={() => deleteService(servicio._id)}
                 />
+                <RoleGuard allow={["admin"]}>
+                  <ConfirmDialog
+                    trigger={
+                      <Button variant="outline" size="icon">
+                        <Trash2 className="w-4 h-4 text-red-600" />
+                      </Button>
+                    }
+                    title="Eliminar servicio"
+                    description={`¿Eliminar "${servicio.nombre}"?`}
+                    confirmText="Eliminar"
+                    onConfirm={() => deleteService(servicio._id)}
+                  />
+                </RoleGuard>
               </>
             )}
           </div>
